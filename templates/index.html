@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Professional Calculator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; padding: 20px; }
+        .calc { border: 1px solid #ccc; padding: 20px; border-radius: 10px; width: 100%; max-width: 300px; }
+        input { width: 100%; padding: 10px; margin-bottom: 10px; }
+        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="calc">
+        <h2>Calculator</h2>
+        <input type="number" id="n1" placeholder="Number 1">
+        <input type="number" id="n2" placeholder="Number 2">
+        <select id="op">
+            <option value="+">+</option>
+            <option value="-">-</option>
+            <option value="*">*</option>
+            <option value="/">/</option>
+        </select>
+        <button onclick="calc()">Calculate</button>
+        <h3 id="res">Result: </h3>
+    </div>
+
+    <script>
+        function calc() {
+            let n1 = document.getElementById('n1').value;
+            let n2 = document.getElementById('n2').value;
+            let op = document.getElementById('op').value;
+            // Halkan waxaan ku xiri doonnaa Backend-ka (Flask)
+            fetch('/calculate', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({num1: n1, num2: n2, operation: op})
+            })
+            .then(res => res.json())
+            .then(data => document.getElementById('res').innerText = "Result: " + data.result);
+        }
+    </script>
+</body>
+</html>
