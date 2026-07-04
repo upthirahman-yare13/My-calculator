@@ -2,49 +2,52 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pro Calculator</title>
-    <!-- PWA Settings -->
+    <!-- PWA Link-yada -->
     <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/icon.png" type="image/png">
     <link rel="apple-touch-icon" href="/icon.png">
+    <meta name="theme-color" content="#764ba2">
+    
     <style>
         body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
             display: flex; justify-content: center; align-items: center; 
-            height: 100vh; margin: 0; 
+            min-height: 100vh; margin: 0; padding: 20px;
         }
         .calc-card { 
-            background: rgba(255, 255, 255, 0.95); 
-            padding: 2.5rem; 
-            border-radius: 25px; 
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2); 
-            width: 320px; 
-            text-align: center;
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.98); 
+            padding: 2rem; border-radius: 30px; 
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3); 
+            width: 100%; max-width: 350px; text-align: center;
         }
-        h2 { color: #333; margin-bottom: 20px; }
+        h2 { color: #333; margin-bottom: 20px; font-weight: 700; }
         input, select { 
-            width: 100%; padding: 14px; margin: 10px 0; 
-            border: 2px solid #eee; border-radius: 12px; 
-            font-size: 16px; box-sizing: border-box;
+            width: 100%; padding: 15px; margin: 8px 0; 
+            border: 2px solid #ddd; border-radius: 15px; 
+            font-size: 16px; outline: none; transition: 0.3s;
         }
+        input:focus { border-color: #764ba2; }
         button { 
-            width: 100%; padding: 15px; margin-top: 10px;
+            width: 100%; padding: 16px; margin-top: 15px;
             background: #764ba2; color: white; border: none; 
-            border-radius: 12px; font-size: 18px; font-weight: bold; 
-            cursor: pointer; transition: 0.3s; 
+            border-radius: 15px; font-size: 18px; font-weight: bold; 
+            cursor: pointer; transition: 0.3s;
         }
-        button:hover { background: #5a377d; transform: translateY(-2px); }
+        button:active { transform: scale(0.98); }
         #res { 
-            font-size: 1.8rem; font-weight: bold; color: #764ba2; 
-            margin-top: 25px; padding: 10px; border-top: 2px solid #eee;
+            font-size: 1.5rem; font-weight: 700; color: #764ba2; 
+            margin-top: 25px; padding: 15px; background: #f8f9fa;
+            border-radius: 15px; border: 1px solid #eee;
         }
     </style>
 </head>
 <body>
+
     <div class="calc-card">
-        <h2>Calculator</h2>
+        <h2>Pro Calculator</h2>
         <input type="number" id="num1" placeholder="Number 1">
         <input type="number" id="num2" placeholder="Number 2">
         <select id="op">
@@ -62,7 +65,7 @@
             const btn = document.getElementById('calcBtn');
             const resDiv = document.getElementById('res');
             
-            btn.innerText = "Calculating...";
+            btn.innerText = "Processing...";
             btn.disabled = true;
 
             const data = {
@@ -78,9 +81,14 @@
                     body: JSON.stringify(data)
                 });
                 const res = await response.json();
-                resDiv.innerText = "Result: " + (res.result ?? res.error);
+                
+                if (response.ok) {
+                    resDiv.innerText = "Result: " + res.result;
+                } else {
+                    resDiv.innerText = "Error: " + (res.error || "Failed");
+                }
             } catch (err) {
-                resDiv.innerText = "Error!";
+                resDiv.innerText = "Check Connection!";
             } finally {
                 btn.innerText = "Calculate";
                 btn.disabled = false;
