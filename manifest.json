@@ -3,13 +3,14 @@
   "short_name": "Calculator",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#764ba2",
   "theme_color": "#764ba2",
   "icons": [
     {
       "src": "/icon.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
