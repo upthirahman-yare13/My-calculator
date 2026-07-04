@@ -1,16 +1,17 @@
 import os
 import logging
 from flask import Flask, request, jsonify, render_template
-import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, firestore, initialize_app
+from calculator import Calculator
 
-# Habeynta Logging-ka
+# Logging setup
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+calc = Calculator() # Halkan ayaan ka soo dhex wacnay class-ka calculator
 
-# Firebase configuration oo la xoojiyey
+# Firebase Setup
 def get_firebase_credentials():
     return {
         "type": "service_account",
@@ -27,7 +28,7 @@ def get_firebase_credentials():
 
 try:
     cred = credentials.Certificate(get_firebase_credentials())
-    firebase_admin.initialize_app(cred)
+    initialize_app(cred)
     db = firestore.client()
     logger.info("Firebase initialization successful.")
 except Exception as e:
@@ -41,44 +42,26 @@ def home():
 def calculate():
     try:
         data = request.get_json()
-        
-        # Hubinta xogta (Validation)
-        if not data or 'num1' not in data or 'num2' not in data:
-            return jsonify({'error': 'Invalid input data'}), 400
-        
-        n1 = float(data['num1'])
-        n2 = float(data['num2'])
+        n1, n2 = float(data['num1']), float(data['num2'])
         op = data['operation']
         
-        # Xisaabinta
-        operations = {
-            '+': n1 + n2,
-            '-': n1 - n2,
-            '*': n1 * n2,
-            '/': n1 / n2 if n2 != 0 else "Error: Div by Zero"
-        }
+        # Isticmaalka Calculator class
+        if op == '+': res = calc.add(n1, n2)
+        elif op == '-': res = calc.subtract(n1, n2)
+        elif op == '*': res = calc.multiply(n1, n2)
+        elif op == '/': res = calc.divide(n1, n2)
+        else: return jsonify({'error': 'Operation invalid'}), 400
         
-        res = operations.get(op, "Invalid operation")
+        # Kaydinta Firestore
+        db.collection('history').add({
+            'n1': n1, 'n2': n2, 'op': op, 'res': res, 
+            'timestamp': firestore.SERVER_TIMESTAMP
+        })
         
-        # Kaydinta Firestore (Optional: Waxaan ku darnay try-except si ayan u carqaladayn xisaabta)
-        try:
-            db.collection('history').add({
-                'num1': n1,
-                'num2': n2,
-                'operation': op,
-                'result': res,
-                'timestamp': firestore.SERVER_TIMESTAMP
-            })
-        except Exception as db_err:
-            logger.warning(f"Database save failed: {db_err}")
-            
         return jsonify({'result': res})
-
-    except ValueError:
-        return jsonify({'error': 'Please enter valid numbers'}), 400
     except Exception as e:
-        logger.error(f"Calculation error: {e}")
-        return jsonify({'error': 'Internal Server Error'}), 500
+        logger.error(f"Error: {e}")
+        return jsonify({'error': str(e)}), 400
 
 if __name__ == '__main__':
-    app.run(debug=False) # debug=False ayaan u badalay, waa mid ka amaan badan Production
+    app.run(debug=False)
